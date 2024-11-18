@@ -1,0 +1,15 @@
+CACHE MANIFEST 
+#VERSION 3.7
+
+CACHE: 
+exploit.js
+index.html
+int64.js
+rop.js
+rop_slave.js
+Style.css
+utils.js
+webkit.js
+
+NETWORK: 
+* 
