@@ -1,7 +1,8 @@
 CACHE MANIFEST 
-#VERSION 4.5
+#VERSION 4.6
 
 CACHE: 
+binldr.elf
 elfldr.elf
 exploit.js
 index.html
