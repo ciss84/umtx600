@@ -2,7 +2,6 @@ CACHE MANIFEST
 #VERSION 4.9
 
 CACHE: 
-binldr.elf
 elfldr.elf
 exploit.js
 index.html
