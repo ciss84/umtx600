@@ -743,7 +743,7 @@ function sread64(str, offset) {
     return new Int(res);
 }
 
-const SYS_READ                = 0x003;
+/*const SYS_READ                = 0x003;
 const SYS_WRITE               = 0x004;
 const SYS_CLOSE               = 0x006;
 const SYS_GETPID              = 0x014;
@@ -773,9 +773,9 @@ const SYS_FSTAT               = 0x0BD;
 const SYS_SETSOCKOPT          = 0x069;
 const SYS_GETSOCKOPT          = 0x076;
 const SYS_IS_IN_SANDBOX       = 0x249;
-//const SYS_NETGETIFLIST        = 0x07D;
+//const SYS_NETGETIFLIST        = 0x07D;*/
 
-/*const SYS_SYSCALL = 0x000;
+const SYS_SYSCALL = 0x000;
 const SYS_EXIT = 0x001;
 const SYS_FORK = 0x002;
 const SYS_READ = 0x003;
@@ -1309,4 +1309,4 @@ const SYS_DL_GET_INFO_2 = 0x2CD;
 const SYS_ACINFO_ADD = 0x2CE;
 const SYS_ACINFO_DELETE = 0x2CF;
 const SYS_ACINFO_GET_ALL_FOR_COREDUMP = 0x2D0;
-const SYS_AMPR_CTRL_DEBUG = 0x2D1;*/
+const SYS_AMPR_CTRL_DEBUG = 0x2D1;
