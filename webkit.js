@@ -389,6 +389,7 @@
     });
  }
  async function run(){
+    try{
     showMessage("[+] Webkit exploit (PSFree) (Step 0 - Readying)"), 
     await get_ready();
     showMessage("Webkit Patch (PSFree) (Step 1 - UAF)"),
@@ -447,4 +448,11 @@
     };
  window.p = prim;
  run_hax();
+ } catch (error) {
+        //debug_log("[!] Webkit exploit failed: " + error);
+        //debug_log("[+] Retrying in 2 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+        window.location.reload();
+        return; // this is necessary
+ } 
 }
