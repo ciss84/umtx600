@@ -21,10 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 // * PS4 [6.00, 10.00)
 // * PS5 [1.00, 6.00)
 
-import { Int } from '/module/int64.js';
-import { Memory, mem } from '/module/mem.js';
-import { KB, MB } from '/module/offset.js';
-import { BufferView } from '/module/rw.js';
+import { Int } from './module/int64.js';
+import { Memory, mem } from './module/mem.js';
+import { KB, MB } from './module/offset.js';
+import { BufferView } from './module/rw.js';
 
 import {
     die,
@@ -35,10 +35,10 @@ import {
     hex,
     hex_np,
     align,
-} from '/module/utils.js';
+} from './module/utils.js';
 
-import * as config from '/config.js';
-import * as off from '/module/offset.js';
+import * as config from './config.js';
+import * as off from './module/offset.js';
 
 addEventListener('unhandledrejection', event => {
     const reason = event.reason;
