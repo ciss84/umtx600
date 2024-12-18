@@ -21,7 +21,7 @@ addEventListener('error', event => {
     );
     return true;
 });
-/*const [is_ps4, version] = (() => {
+const [is_ps4, version] = (() => {
     const value = config.target;
     const is_ps4 = (value & 0x10000) === 0;
     const version = value & 0xffff;
@@ -36,8 +36,8 @@ addEventListener('error', event => {
         throw RangeError(`invalid config.target: ${hex(value)}`);
     }
     return [is_ps4, version];
-})();*/
-/*const ssv_len = (() => {
+})();
+const ssv_len = (() => {
     if (0x600 <= config.target && config.target < 0x650) {
         return 0x58;
     }
@@ -47,8 +47,8 @@ addEventListener('error', event => {
     if (0x650 <= config.target && config.target < 0x900) {
         return 0x48;
     }
-})();*/
-const ssv_len = 0x50;
+})();
+//const ssv_len = 0x50;
 const num_fsets = 0x180;
 const num_spaces = 0x40;
 const num_adjs = 6;
@@ -338,14 +338,14 @@ async function leak_code_block(reader, bt_size) {
     return [winning_f, bt_addr, strs_addr];
 }
 function make_ssv_data(ssv_buf, view, view_p, addr, size) {
-    /*const size_abc = (() => {
+    const size_abc = (() => {
         if (is_ps4) {
             return version >= 0x900 ? 0x18 : 0x20;
         } else {
             return version >= 0x300 ? 0x18 : 0x20;
         }
-    })();*/
-    const size_abc = 0x900 ? 0x18 : 0x20;
+    })();
+    //const size_abc = 0x900 ? 0x18 : 0x20;
     const data_len = 9;
     const size_vector = 0x10;
     const off_m_data = 8;
