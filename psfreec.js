@@ -525,7 +525,7 @@ async function run() {
             return new int64(res.low, res.high);
         }
     };       
-    run_hax();
+    //run_hax();
     } catch (error) {
         debug_log("[!] Webkit exploit failed: " + error);
         debug_log("[+] Retrying in 2 seconds...");
