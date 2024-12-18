@@ -1,17 +1,21 @@
 CACHE MANIFEST 
-#VERSION 10.5
+#VERSION 1.1 
 
 CACHE: 
+binldr.elf
+config.js
 elfldr.elf
 exploit.js
 index.html
 int64.js
 lndex.html
+offset.js
+psfreec.js
+README.md
 rop.js
 rop_slave.js
 Style.css
 utils.js
-webkit.js
 
 NETWORK: 
 * 
