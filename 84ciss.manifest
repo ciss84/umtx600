@@ -1,8 +1,7 @@
 CACHE MANIFEST 
-#VERSION 1.1 
+#VERSION 1.2
 
-CACHE: 
-binldr.elf
+CACHE:
 config.js
 elfldr.elf
 exploit.js
@@ -11,7 +10,6 @@ int64.js
 lndex.html
 offset.js
 psfreec.js
-README.md
 rop.js
 rop_slave.js
 Style.css
