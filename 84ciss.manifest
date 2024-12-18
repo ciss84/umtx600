@@ -1,12 +1,12 @@
 CACHE MANIFEST 
-#VERSION 1.6
+#VERSION 1.7
 
-CACHE: 
+CACHE:
 config.js
 elfldr.elf
-kexploit.js
 index.html
 int64.js
+kexploit.js
 lndex.html
 offset.js
 psfreec.js
