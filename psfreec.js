@@ -23,7 +23,7 @@ addEventListener('error', event => {
 });
 const [is_ps4, version] = (() => {
     const value = config.target;
-    const is_ps4 = (value & 0x10000) === 1;
+    const is_ps4 = (value & 0x10000) === 0;
     const version = value & 0xffff;
     const [lower, upper] = (() => {
         if (is_ps4) {
@@ -37,7 +37,7 @@ const [is_ps4, version] = (() => {
     }
     return [is_ps4, version];
 })();
-const ssv_len = (() => {
+/*const ssv_len = (() => {
     if (0x600 <= config.target && config.target < 0x650) {
         return 0x58;
     }
@@ -47,8 +47,8 @@ const ssv_len = (() => {
     if (0x650 <= config.target && config.target < 0x900) {
         return 0x48;
     }
-})();
-//const ssv_len = 0x50;
+})();*/
+const ssv_len = 0x50;
 const num_fsets = 0x180;
 const num_spaces = 0x40;
 const num_adjs = 6;
