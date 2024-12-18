@@ -1,5 +1,5 @@
 import { Int, KB, MB } from './offset.js';
-import { die, DieError, debug_log, clear_log, sleep, hex, hex_np, align, BufferView, Memory, mem, } from '/utils.js';
+import { die, DieError, debug_log, clear_log, sleep, hex, hex_np, align, BufferView, Memory, mem, } from './utils.js';
 import * as config from './config.js';
 import * as off from './offset.js';
 addEventListener('unhandledrejection', event => {
