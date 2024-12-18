@@ -1,19 +1,7 @@
-import { Int } from './module/int64.js';
-import { Memory, mem } from './module/mem.js';
-import { KB, MB } from './module/offset.js';
-import { BufferView } from './module/rw.js';
-import {
-    die,
-    DieError,
-    debug_log,
-    clear_log,
-    sleep,
-    hex,
-    hex_np,
-    align,
-} from './module/utils.js';
+import { Int, KB, MB } from './offset.js';
+import { die, DieError, debug_log, clear_log, sleep, hex, hex_np, align, BufferView, Memory, mem, } from '/utils.js';
 import * as config from './config.js';
-import * as off from './module/offset.js';
+import * as off from './offset.js';
 addEventListener('unhandledrejection', event => {
     const reason = event.reason;
     alert(
@@ -33,7 +21,7 @@ addEventListener('error', event => {
     );
     return true;
 });
-const [is_ps4, version] = (() => {
+/*const [is_ps4, version] = (() => {
     const value = config.target;
     const is_ps4 = (value & 0x10000) === 0;
     const version = value & 0xffff;
@@ -48,7 +36,7 @@ const [is_ps4, version] = (() => {
         throw RangeError(`invalid config.target: ${hex(value)}`);
     }
     return [is_ps4, version];
-})();
+})();*/
 /*const ssv_len = (() => {
     if (0x600 <= config.target && config.target < 0x650) {
         return 0x58;
@@ -350,14 +338,14 @@ async function leak_code_block(reader, bt_size) {
     return [winning_f, bt_addr, strs_addr];
 }
 function make_ssv_data(ssv_buf, view, view_p, addr, size) {
-    const size_abc = (() => {
+    /*const size_abc = (() => {
         if (is_ps4) {
             return version >= 0x900 ? 0x18 : 0x20;
         } else {
             return version >= 0x300 ? 0x18 : 0x20;
         }
-    })();
-    //const size_abc = 0x900 ? 0x18 : 0x20;
+    })();*/
+    const size_abc = 0x900 ? 0x18 : 0x20;
     const data_len = 9;
     const size_vector = 0x10;
     const off_m_data = 8;
@@ -476,6 +464,7 @@ async function make_arw(reader, view2, pop) {
 }
 async function run() {
     try{
+    StartTimer();
     debug_log('STAGE: UaF SSV');
     const [fsets, indices] = prepare_uaf();
     const view = await uaf_ssv(fsets, indices[1]);
