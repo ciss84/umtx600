@@ -2,18 +2,24 @@ CACHE MANIFEST
 #VERSION 1.7
 
 CACHE: 
+alert.js
 config.js
 elfldr.elf
 exploit.js
 index.html
 int64.js
 lndex.html
-offset.js
-psfreec.js
+psfree.js
 rop.js
 rop_slave.js
 Style.css
-utils.js
+module\chain.js
+module\int64.js
+module\mem.js
+module\memtools.js
+module\offset.js
+module\rw.js
+module\utils.js
 
 NETWORK: 
 * 
