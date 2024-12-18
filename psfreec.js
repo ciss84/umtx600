@@ -23,7 +23,7 @@ addEventListener('error', event => {
 });
 const [is_ps4, version] = (() => {
     const value = config.target;
-    const is_ps4 = (value & 0x10000) === 0;
+    const is_ps4 = (value & 0x10000) === 1;
     const version = value & 0xffff;
     const [lower, upper] = (() => {
         if (is_ps4) {
