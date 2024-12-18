@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 // * PS5 [1.00, 6.00)
 
 import { Int } from '/module/int64.js';
-import { Memory, mem } from './module/mem.js';
+import { Memory, mem } from '/module/mem.js';
 import { KB, MB } from '/module/offset.js';
 import { BufferView } from '/module/rw.js';
 
