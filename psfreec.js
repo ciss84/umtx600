@@ -37,7 +37,7 @@ const [is_ps4, version] = (() => {
     }
     return [is_ps4, version];
 })();
-/*const ssv_len = (() => {
+const ssv_len = (() => {
     if (0x600 <= config.target && config.target < 0x650) {
         return 0x58;
     }
@@ -47,8 +47,8 @@ const [is_ps4, version] = (() => {
     if (0x650 <= config.target && config.target < 0x900) {
         return 0x48;
     }
-})();*/
-const ssv_len = 0x50;
+})();
+//const ssv_len = 0x50;
 const num_fsets = 0x180;
 const num_spaces = 0x40;
 const num_adjs = 6;
