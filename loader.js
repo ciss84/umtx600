@@ -1,13 +1,4 @@
-        function showMessage(msg) {
-            document.getElementById("message").innerHTML = msg;
-        }
+function load_exploit_done(){
+    elfldrpl();
+}
 
-        function allset() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("allset").style.display = "block";
-        }
-
-        function elfldrpl() {
-            document.getElementById("loader").style.display = "none";
-            document.getElementById("awaiting").style.display = "block";
-        }
