@@ -28,4 +28,4 @@ export function set_target(value) {
 }
 
 export let target = null;
-set_target(0x10550);
+set_target(0x500);
