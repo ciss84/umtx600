@@ -1,19 +1,7 @@
-import { Int } from '/module/int64.js';
-import { Memory, mem } from './module/mem.js';
-import { KB, MB } from '/module/offset.js';
-import { BufferView } from '/module/rw.js';
-import {
-    die,
-    DieError,
-    debug_log,
-    clear_log,
-    sleep,
-    hex,
-    hex_np,
-    align,
-} from '/module/utils.js';
+import { Int, KB, MB } from '/offset.js';
+import { die, DieError, debug_log, clear_log, sleep, hex, hex_np, align, BufferView, Memory, mem, } from '/utils.js';
 import * as config from '/config.js';
-import * as off from '/module/offset.js';
+import * as off from '/offset.js';
 addEventListener('unhandledrejection', event => {
     const reason = event.reason;
     alert(
