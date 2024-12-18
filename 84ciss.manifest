@@ -1,17 +1,19 @@
 CACHE MANIFEST 
-#VERSION 10.5
+#VERSION 1.9 
 
 CACHE: 
+config.js
 elfldr.elf
 exploit.js
 index.html
 int64.js
 lndex.html
+offset.js
+psfreec.js
 rop.js
 rop_slave.js
 Style.css
 utils.js
-webkit.js
 
 NETWORK: 
 * 
