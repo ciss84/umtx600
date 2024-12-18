@@ -1,5 +1,5 @@
 CACHE MANIFEST 
-#VERSION 1.9 
+#VERSION 1.1
 
 CACHE: 
 config.js
@@ -8,12 +8,16 @@ exploit.js
 index.html
 int64.js
 lndex.html
-offset.js
 psfreec.js
 rop.js
 rop_slave.js
 Style.css
-utils.js
+module\int64.js
+module\mem.js
+module\memtools.js
+module\offset.js
+module\rw.js
+module\utils.js
 
 NETWORK: 
 * 

