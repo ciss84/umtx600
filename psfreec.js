@@ -464,7 +464,6 @@ async function make_arw(reader, view2, pop) {
 }
 async function run() {
     try{
-    StartTimer();
     debug_log('STAGE: UaF SSV');
     const [fsets, indices] = prepare_uaf();
     const view = await uaf_ssv(fsets, indices[1]);
