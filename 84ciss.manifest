@@ -1,15 +1,14 @@
 CACHE MANIFEST 
-#VERSION 2.5
+#VERSION 1.1 
 
 CACHE: 
 config.js
-elfldr.elf
 exploit.js
 index.html
 int64.js
 lndex.html
 offset.js
-psfree.js
+psfreec.js
 rop.js
 rop_slave.js
 Style.css
