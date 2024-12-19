@@ -1,7 +1,3 @@
-/*function done() {
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("alldone").style.display = "block";
-}*/
 function Done() {
     document.getElementById("loader").style.display = "none";
     document.getElementById("alldone").style.display = "flex";
