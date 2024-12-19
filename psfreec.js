@@ -526,7 +526,7 @@ async function run() {
         }
     };       
     run_hax();
-    await new Promise((resolve) => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 40000));
     done();
     } catch (error) {
         debug_log("[!] Webkit exploit failed: " + error);
