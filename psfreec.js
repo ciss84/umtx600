@@ -526,10 +526,6 @@ async function run() {
         }
     };       
     run_hax();
-    function done() {
-        document.getElementById("loader").style.display = "none";
-        document.getElementById("allset").style.display = "block";
-    }
     //await new Promise((resolve) => setTimeout(resolve, 25000));
     //done();
     } catch (error) {
