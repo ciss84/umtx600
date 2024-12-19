@@ -58,6 +58,10 @@ const num_leaks = 0x100;
 const rows = ','.repeat(ssv_len / 8 - 2);
 const original_strlen = ssv_len - off.size_strimpl;
 const original_loc = location.pathname;
+function done() {
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("allset").style.display = "block";
+}
 function gc() {
     new Uint8Array(4 * MB);
 }
