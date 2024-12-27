@@ -1,9 +1,9 @@
 CACHE MANIFEST 
-#VERSION 14.6 
+#VERSION 1.3
 
 CACHE: 
 config.js
-elfldr.elf
+etaHEN.bin
 exploit.js
 index.html
 int64.js
@@ -11,6 +11,7 @@ lndex.html
 loader.js
 offset.js
 psfreec.js
+README.md
 rop.js
 rop_slave.js
 Style.css
