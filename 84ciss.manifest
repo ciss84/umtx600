@@ -1,8 +1,9 @@
 CACHE MANIFEST 
-#VERSION 1.38
+#VERSION 1.39
 
 CACHE: 
 config.js
+elfldr.elf
 etaHEN.bin
 exploit.js
 index.html
