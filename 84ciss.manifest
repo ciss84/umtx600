@@ -1,5 +1,5 @@
 CACHE MANIFEST 
-#VERSION 1.43
+#VERSION 1.44
 
 CACHE: 
 config.js
@@ -17,6 +17,7 @@ rop.js
 rop_slave.js
 Style.css
 utils.js
+websrv.elf
 
 NETWORK: 
 * 
