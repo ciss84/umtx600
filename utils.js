@@ -22,7 +22,7 @@ export function die(msg='') {
     throw new DieError(msg);
 }
 
-const console = document.getElementById('console');
+//const console = document.getElementById('console');
 //export function debug_log(msg='') {
 //    console.append(msg + '\n');
 //}
