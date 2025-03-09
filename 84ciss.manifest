@@ -8,7 +8,6 @@ etaHEN.bin
 exploit.js
 index.html
 int64.js
-kstuff.elf
 lndex.html
 loader.js
 offset.js
@@ -17,7 +16,6 @@ rop.js
 rop_slave.js
 Style.css
 utils.js
-websrv.elf
 
 NETWORK: 
 * 
